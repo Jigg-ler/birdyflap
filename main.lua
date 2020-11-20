@@ -1,4 +1,11 @@
+--[[
+    Class, global, and local variable initializations
+]]
+--Classes
 push = require 'push'
+
+Class = require 'class'
+require 'Player'
 
 --window parameters
 WINDOW_WIDTH = 1280
@@ -18,6 +25,9 @@ local BACKGROUND_SCROLL_SPEED = 30
 local GROUND_SCROLL_SPEED = 60
 
 local BACKGROUND_LOOPING_POINT = 413
+
+--player
+local player = Player()
 
 function love.load()
     love.window.setTitle('Birdy Flap')
@@ -59,6 +69,8 @@ function love.draw()
   -- draw the ground on top of the background, toward the bottom of the screen,
   -- at its negative looping point
   love.graphics.draw(ground, -groundScroll, VIRTUAL_HEIGHT - 16)
+
+  player:render()
   
     push:finish()
 end
