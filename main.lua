@@ -7,6 +7,8 @@ push = require 'push'
 Class = require 'class'
 require 'Player'
 
+require 'Pipe'
+
 --window parameters
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
@@ -29,8 +31,14 @@ local BACKGROUND_LOOPING_POINT = 413
 --player
 local player = Player()
 
+local pipes = {}
+
+local spawnTimer = 0
+
 function love.load()
     love.window.setTitle('Birdy Flap')
+
+    math.randomseed(os.time())
 
     love.graphics.setDefaultFilter('nearest', 'nearest')
 
@@ -58,19 +66,39 @@ function love.update(dt)
     -- scroll ground by preset speed * dt, looping back to 0 after the screen width passes
     groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt) 
         % VIRTUAL_WIDTH
+
+    spawnTimer = spawnTimer + dt
+
+    if spawnTimer > 2 then
+        table.insert(pipes, Pipe())
+        spawnTimer = 0
+    end
+
+    for k, pipe in pairs(pipes) do
+        pipe:update(dt)
+
+        if pipe.x < -pipe.width then
+            table.remove(pipes, k)
+        end
+    end
+
 end
 
 function love.draw()
     push:start()
         
   -- draw the background at the negative looping point
-  love.graphics.draw(background, -backgroundScroll, 0)
+    love.graphics.draw(background, -backgroundScroll, 0)
+
+    for k, pipe in pairs(pipes) do
+        pipe:render()
+    end
 
   -- draw the ground on top of the background, toward the bottom of the screen,
   -- at its negative looping point
-  love.graphics.draw(ground, -groundScroll, VIRTUAL_HEIGHT - 16)
+    love.graphics.draw(ground, -groundScroll, VIRTUAL_HEIGHT - 16)
 
-  player:render()
+    player:render()
   
     push:finish()
 end
