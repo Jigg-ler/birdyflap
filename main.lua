@@ -8,9 +8,15 @@ Class = require 'class'
 require 'Player'
 
 require 'Pipe'
-
 -- class representing pair of pipes together
 require 'PipePair'
+
+require 'StateMachine'
+require 'states/BaseState'
+require 'states/PlayState'
+require 'states/ScoreState'
+require 'states/CountdownState'
+require 'states/TitleScreenState'
 
 --window parameters
 WINDOW_WIDTH = 1280
@@ -49,14 +55,41 @@ function love.load()
 
     love.graphics.setDefaultFilter('nearest', 'nearest')
 
+    smallFont = love.graphics.newFont('font.ttf', 8)
+    mediumFont = love.graphics.newFont('flappy.ttf', 14)
+    flappyFont = love.graphics.newFont('flappy.ttf', 28)
+    hugeFont = love.graphics.newFont('flappy.ttf', 56)
+    love.graphics.setFont(flappyFont)
+
+    sounds = {
+        ['jump'] = love.audio.newSource('assets/sfx/jump.wav', 'static'),
+        ['explosion'] = love.audio.newSource('assets/sfx/explosion.wav', 'static'),
+        ['hurt'] = love.audio.newSource('assets/sfx/hurt.wav', 'static'),
+        ['score'] = love.audio.newSource('assets/sfx/score.wav', 'static'),
+        ['bg_theme'] = love.audio.newSource('assets/sfx/bg_theme.wav', 'static'),
+    }
+
+    sounds['bg_theme']:setLooping(true)
+    sounds['bg_theme']:play()
+
     push:setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, {
         fullscreen = false,
         resizable = false,
         vsync = true
     })
 
+    -- initialize state machine with all state-returning functions
+    gStateMachine = StateMachine {
+        ['title'] = function() return TitleScreenState() end,
+        ['play'] = function() return PlayState() end,
+        ['score'] = function () return ScoreState() end,
+        ['countdown'] = function () return CountdownState () end
+    }
+    gStateMachine:change('title')
+
     --creates a table 'love.keyboard' i think hahaha
     love.keyboard.keysPressed = {}
+    love.mouse.buttonsPressed = {}
 end
 
 
@@ -70,12 +103,20 @@ function love.keypressed(key)
 
 end
 
+function love.mousepressed(x, y, button)
+    love.mouse.buttonsPressed[button] = true
+end
+
 function love.keyboard.wasPressed(key)
     if love.keyboard.keysPressed[key] then
         return true
     else
         return false
     end
+end
+
+function love.mouse.wasPressed(button)
+    return love.mouse.buttonsPressed[button]
 end
 
 function love.update(dt)
@@ -88,46 +129,13 @@ function love.update(dt)
         groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt) 
             % VIRTUAL_WIDTH
 
-        spawnTimer = spawnTimer + dt
+        gStateMachine:update(dt)
 
-        if spawnTimer > 2 then
-            local y = math.max(-PIPE_HEIGHT + 10, math.min(lastY + math.random(-20, 20), VIRTUAL_HEIGHT - 90 - PIPE_HEIGHT))
-            lastY = y
+        -- resets input table
+        love.keyboard.keysPressed = {}
+        love.mouse.buttonsPressed = {}
 
-            table.insert(pipePairs, PipePair(y))
-            spawnTimer = 0
-        end
-
-        player:update(dt)
-
-        --temporary upper bounds
-        if player.y <= 0 then
-            player.y = 0
-            player.dy = 0
-        end
-
-        for k, pair in pairs(pipePairs) do
-            pair:update(dt)
-
-            --checks if player collides with any of the pipes
-            for l, pipe in pairs(pair.pipes) do
-                if player:collides(pipe) then
-                    scrolling = false
-                end
-            end
-
-        end
-
-        for k, pair in pairs(pipePairs) do
-            if pair.remove then
-                table.remove(pipePairs, k)
-            end
-        end
-        
     end
-
-    --before the frame ends it empties the table
-    love.keyboard.keysPressed = {}
 end
 
 function love.draw()
@@ -135,21 +143,10 @@ function love.draw()
         
   -- draw the background at the negative looping point
     love.graphics.draw(background, -backgroundScroll, 0)
-
-    for k, pair in pairs(pipePairs) do
-        pair:render()
-    end
-
+    gStateMachine:render()
   -- draw the ground on top of the background, toward the bottom of the screen,
   -- at its negative looping point
     love.graphics.draw(ground, -groundScroll, VIRTUAL_HEIGHT - 16)
-
-    player:render()
-  
+ 
     push:finish()
-end
-
-
-function love.resize(w, h)
-    push:resize(w, h)
 end

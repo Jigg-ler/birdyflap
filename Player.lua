@@ -1,6 +1,6 @@
 Player = Class{}
 
-local GRAVITY = 25
+local GRAVITY = 20
 
 function Player:init()
     self.image = love.graphics.newImage('assets/player.png')
@@ -33,8 +33,10 @@ function Player:update(dt)
     self.dy = self.dy + GRAVITY * dt
 
     --if user pressed space, adjusts velocity
-    if love.keyboard.wasPressed('space') then
+    if love.keyboard.wasPressed('space') or love.mouse.wasPressed(1) then
         self.dy = -5
+        sounds['jump']:stop()
+        sounds['jump']:play()
     end
 
     --adds the current velocity to the player's y position
