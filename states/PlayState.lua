@@ -96,7 +96,7 @@ function PlayState:render()
     end
 
     love.graphics.setFont(flappyFont)
-    love.graphics.print('Score = ' .. tostring(self.score), 8, 8)
+    love.graphics.print('SCORE = ' .. tostring(self.score), 8, 8)
 
     self.bird:render()
 end

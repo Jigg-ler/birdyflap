@@ -55,10 +55,10 @@ function love.load()
 
     love.graphics.setDefaultFilter('nearest', 'nearest')
 
-    smallFont = love.graphics.newFont('font.ttf', 8)
-    mediumFont = love.graphics.newFont('flappy.ttf', 14)
-    flappyFont = love.graphics.newFont('flappy.ttf', 28)
-    hugeFont = love.graphics.newFont('flappy.ttf', 56)
+    smallFont = love.graphics.newFont('font.ttf', 5)
+    mediumFont = love.graphics.newFont('flappy.ttf', 8)
+    flappyFont = love.graphics.newFont('flappy.ttf', 14)
+    hugeFont = love.graphics.newFont('flappy.ttf', 28)
     love.graphics.setFont(flappyFont)
 
     sounds = {
