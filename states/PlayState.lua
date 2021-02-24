@@ -24,6 +24,26 @@ function PlayState:generateNextSpawnTimer()
 end
 
 function PlayState:update(dt)
+
+    --PAUSE FEATURE || ASSIGNMENT
+    if self.paused then
+        if love.keyboard.wasPressed('p') then
+            self.paused = false
+            scrolling = true
+            sounds['pause']:play()
+            sounds['bg_theme']:play()
+        else
+            return
+        end
+    elseif love.keyboard.wasPressed('p') then
+        self.paused = true
+        scrolling = false
+        sounds['bg_theme']:pause()
+        sounds['pause']:play()
+
+        return
+    end
+
     -- update timer for pipe spawning
     self.timer = self.timer + dt
 
@@ -105,4 +125,10 @@ function PlayState:render()
     love.graphics.print('SCORE = ' .. tostring(self.score), 8, 8)
 
     self.bird:render()
+
+    --PAUSE FEATURE || ASSIGNMENT
+    if self.paused then
+        love.graphics.setFont(hugeFont)
+        love.graphics.printf("PAUSED", 0, VIRTUAL_HEIGHT / 2 - 16, VIRTUAL_WIDTH, 'center')
+    end
 end

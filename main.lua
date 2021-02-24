@@ -46,7 +46,7 @@ local spawnTimer = 0
 local lastY = -PIPE_HEIGHT + math.random(80) + 20
 
 --the game is scrolling
-local scrolling = true
+scrolling = true
 
 function love.load()
     love.window.setTitle('Birdy Flap')
@@ -67,6 +67,7 @@ function love.load()
         ['hurt'] = love.audio.newSource('assets/sfx/hurt.wav', 'static'),
         ['score'] = love.audio.newSource('assets/sfx/score.wav', 'static'),
         ['bg_theme'] = love.audio.newSource('assets/sfx/bg_theme.wav', 'static'),
+        ['pause'] = love.audio.newSource('assets/sfx/pause.wav', 'static')
     }
 
     sounds['bg_theme']:setLooping(true)
@@ -129,13 +130,13 @@ function love.update(dt)
         groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt) 
             % VIRTUAL_WIDTH
 
-        gStateMachine:update(dt)
-
-        -- resets input table
-        love.keyboard.keysPressed = {}
-        love.mouse.buttonsPressed = {}
-
     end
+
+    gStateMachine:update(dt)
+
+    -- resets input table
+    love.keyboard.keysPressed = {}
+    love.mouse.buttonsPressed = {}
 end
 
 function love.draw()
